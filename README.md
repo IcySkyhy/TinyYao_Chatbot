@@ -3,11 +3,11 @@ SPDX-FileCopyrightText: HuYan, Dept. of Automation , Tsinghua University
 SPDX-License-Identifier: MIT
 -->
 
-# 伍小遥 TinyYao_release_v1.0.0 
+# 伍小遥 TinyYao_v1.0.0 
 <h5 align = "center">基于 DeepSeek API 开发的 Chatbot 网页应用</h5>
 
 ## 功能介绍
-代码应用样例可以访问http://183.172.124.17:5000/，此处不再赘述
+代码应用样例可以访问http://183.172.124.17:5000/ ，此处不再赘述
 - 服务器开启时间为**6:00-23:50**
 - 由于信号波动偶尔可能断连，请稍后（1分钟左右）再试
 - 在该实例中 Chatbot 的设定为一个可爱的学习小助手
