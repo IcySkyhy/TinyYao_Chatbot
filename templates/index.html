@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<!--
+  @filename:    index.html
+  @author:      HuYan, Dept. of Automation , Tsinghua University
+  @date:        2025-03-20
+  @license:     MIT
+  @description: 一个简单的前端，用于调用DeepSeek API实现聊天功能
+-->
+<html>
+<head>
+    <title>自xx班ChatBot</title>
+    <style>
+        /* 全局字体配置 */
+        body {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            font-family: 
+                "HYRoundBold",
+                "PingFang SC",
+                "Hiragino Sans GB",
+                "Helvetica Neue",
+                sans-serif;
+            color: #555;
+        }
+
+        /* 加载提示及加载转圈动画样式 */
+        #loading {
+            display: none;
+            color: #666;
+            padding: 10px;
+            margin: 10px 0;
+            align-items: center;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 响应框基础样式 */
+        #response {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: Consolas, "Courier New", monospace;
+            color: #444;
+            line-height: 1.6;
+            border: 1px solid #e0e0e0;
+            margin-top: 20px;
+        }
+
+        /* 输入按钮及控件样式 */
+        input, button {
+            font-family: inherit;
+            font-size: 16px;
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+
+        input {
+            width: 70%;
+            color: #666;
+        }
+
+        button {
+            background: linear-gradient(145deg, #f0f0f0, #ffffff);
+            color: #666;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;    
+        }
+
+        button:hover:not(:disabled) {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            color: #333;
+        }
+
+        /* Markdown渲染样式 */
+        #response h1, #response h2, #response h3 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.3em;
+            font-family: inherit;
+        }
+
+        #response a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        #response a:hover {
+            text-decoration: underline;
+        }
+
+        #response code {
+            background: #f3f3f3;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        #response pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+
+        #response blockquote {
+            border-left: 4px solid #ddd;
+            margin: 1em 0;
+            padding-left: 1em;
+            color: #666;
+        }
+
+        #response table {
+            border-collapse: collapse;
+            margin: 1em 0;
+        }
+
+        #response th, 
+        #response td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+    </style>
+    
+    <!-- 依赖库，主要用于对markdown回复的渲染 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+</head>
+<body>
+    <h1>Hi，我是xxxxChatBot，请问有什么可以帮你？</h1>
+    <input type="text" id="message" placeholder="输入你的消息">
+    <button onclick="sendMessage()">发送</button>
+    <div id="loading">░░░░░ 正在处理中...<div class="loader"></div></div>
+    <div id="response"></div>
+
+    <script>
+        // 配置Markdown解析器
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            highlight: function(code, lang) {
+                return hljs.highlightAuto(code).value;
+            }
+        });
+
+        async function sendMessage() {
+            message = document.getElementById('message').value;
+            const responseDiv = document.getElementById('response');
+            const loadingDiv = document.getElementById('loading');
+            const sendBtn = document.querySelector('button');
+
+            // 禁用按钮并显示加载圆圈
+            sendBtn.disabled = true;
+            loadingDiv.style.display = 'flex';
+
+            // 获取输入与抓包过程
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+                
+                if (data.content) {
+                    const rawHtml = marked.parse(data.content);
+                    responseDiv.innerHTML = DOMPurify.sanitize(rawHtml);
+                    hljs.highlightAll();
+                } else {
+                    responseDiv.textContent = "收到空响应";
+                }
+		message = ''; // 清空输入框（这一版实测好像没有用诶）
+            } catch (error) {
+                responseDiv.innerHTML = `<span style="color:red">请求失败: ${error.message}</span>`;
+            } finally {
+                // 恢复按钮状态并隐藏加载提示
+                sendBtn.disabled = false;
+                loadingDiv.style.display = 'none';
+                // 自动滚动到底部
+                responseDiv.scrollTop = responseDiv.scrollHeight;
+            }
+        }
+
+        // 支持回车发送
+        document.getElementById('message').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !document.querySelector('button').disabled) {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
