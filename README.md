@@ -3,13 +3,21 @@ SPDX-FileCopyrightText: HuYan, Dept. of Automation , Tsinghua University
 SPDX-License-Identifier: MIT
 -->
 
-# 伍小遥 TinyYao_v1.0.0 
+# 伍小遥 TinyYao_release_v1.1.0 
 <h5 align = "center">基于 DeepSeek API 开发的 Chatbot 网页应用</h5>
 
-## 功能介绍
-代码应用样例可以访问http://183.172.124.17:5000/ ，此处不再赘述
+## 开发与更新
+#### - 2025.3.24 TinyYao_release_v1.1.0 
+- 新增日志记录和用户访问记录索引，访问`/log`和`/usrlog`即可查看过往访问记录
+- 新增恶意 IP 检测阻断机制，使用 AbuseIPDB API 进行检测，若 75% 以上恶意置信则拒绝访问
+- 更新快速开始导引
+#### - 2025.3.20 TinyYao_release_v1.0.0 
+- 基础问答聊天功能上线
+### 功能介绍
+代码应用样例可以访问http://183.172.124.17:5000/，此处不再赘述
 - 服务器开启时间为**6:00-23:50**
 - 由于信号波动偶尔可能断连，请稍后（1分钟左右）再试
+- 由于 AbuseIPDB 为国外网站，服务器访问会很慢，请耐心等待（在考虑开发异步判断）
 - 在该实例中 Chatbot 的设定为一个可爱的学习小助手
 - WeChat 开发者接口不可用，因为当前网络阻断了 80 端口
 - 请不要对服务器进行攻击
@@ -35,7 +43,8 @@ source venv/bin/activate
 需要将你的 API_KEY 设置到环境变量`.env`中
 ```bash
 cd /your/project/path/
-echo "DEEPSEEK_API_KEY=YOUR_OWN_API_KEY" >> .env
+echo "DEEPSEEK_API_KEY=YOUR_DEEPSEEK_API_KEY" >> .env
+echo "ABUSEIPDB_API_KEY=YOUR_ABUSEIPDB_API_KEY" >> .env
 ```
 2. 对前端和后端的 Customization 进行设置
 ```Python

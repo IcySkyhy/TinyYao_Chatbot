@@ -13,6 +13,7 @@ from flask import Flask, request, jsonify, make_response, render_template
 import os
 import requests
 from dotenv import load_dotenv
+import datetime
 import time
 import xml.etree.cElementTree as ET
 import hashlib
@@ -22,14 +23,58 @@ app = Flask(__name__)
 
 # 配置API密钥（从环境变量读取，注意一定一定不要将API_KEY硬编码在代码中）
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
-API_ENDPOINT = "https://api.deepseek.com/v1/chat/completions" 
+DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
+ABUSEIPDB_API_KEY = os.getenv("ABUSEIPDB_API_KEY")
+ABUSEIPDB_API_URL = "https://api.abuseipdb.com/api/v2/check"
+
+########################################################################################
+# 调用API检测IP恶意程度函数
+########################################################################################
+def check_ip_abuse(ip_address):
+    headers = {"Key": ABUSEIPDB_API_KEY}
+    params = {"ipAddress": ip_address, "maxAgeInDays": "90"}
+    try:
+        response = requests.get(ABUSEIPDB_API_URL, headers=headers, params=params)
+        data = response.json()
+        return data["data"]["abuseConfidenceScore"]
+    except Exception as e:
+        print(f"AbuseIPDB 检测失败: {e}")
+        return 0  # 默认放行
 
 ########################################################################################
 # 首页路由
 ########################################################################################
 @app.route('/')
 def index():
-    return render_template('index.html')  # 会自动查找templates目录下的html渲染网页
+    ip_address = request.remote_addr
+    abuse_score = check_ip_abuse(ip_address)
+    
+    # 正常记录日志并返回页面
+    request_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log_entry = f"# {ip_address} : {request_time} | Alert {abuse_score} %\n"
+    with open("usrlog.txt", "a", encoding="utf-8") as log_file:
+        log_file.write(log_entry)
+
+    # 如果 Abuse 置信度超过阈值（例如 75%），则拦截
+    if abuse_score > 75:
+        return "您的 IP 存在风险，访问被拒绝", 403
+    return render_template('index.html')
+
+########################################################################################
+# 用户聊天日志记录
+# 用户登入日志记录
+########################################################################################
+@app.route('/log', methods=['GET'])
+def get_log():
+    with open("log.txt", "r", encoding="utf-8") as f:
+        request_log = f.read()  
+    return f"<pre>{request_log}</pre>" # 保留空格
+
+@app.route('/usrlog', methods=['GET'])
+def get_usr_log():
+    with open("usrlog.txt", "r", encoding="utf-8") as f:
+        usr_log = f.read()
+    return f"<pre>{usr_log}</pre>"
 
 ########################################################################################
 # 微信公众号开发接口，如无需要可以删去
@@ -74,7 +119,7 @@ def wechat():                             # 获取携带的 signature、timestam
                 ],
                 "model": "deepseek-chat"  # "deepseek-reasoner" 
             }
-            response = requests.post(API_ENDPOINT, headers=headers, json=data)
+            response = requests.post(DEEPSEEK_API_URL, headers=headers, json=data)
             response.raise_for_status()  
             if response.status_code == 200:
                 api_data = response.json()
@@ -103,7 +148,8 @@ def wechat():                             # 获取携带的 signature、timestam
 def chat():
     try:
         user_message = request.json.get('message')
-        
+        request_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ip_address = request.remote_addr
         # DeepSeek API 的数据格式
         headers = {
             "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
@@ -116,11 +162,16 @@ def chat():
             ],
             "model": "deepseek-reasoner"  # "deepseek-chat"，这里可以选择不同的模型，reasoner慢一点
         }
-        response = requests.post(API_ENDPOINT, headers=headers, json=data)
+        response = requests.post(DEEPSEEK_API_URL, headers=headers, json=data)
         response.raise_for_status()  # 检查HTTP错误
         if response.status_code == 200:
             api_data = response.json()
             content = api_data['choices'][0]['message']['content']  # ← 这里提取content，如果需要reasoner的思维链自行查看文档解决
+            # 写入log日志
+            answer_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            log_entry = f"# {ip_address} :\n    {request_time} | Q: {user_message} \n    {answer_time} | A: {content}\n"
+            with open("log.txt", "a", encoding="utf-8") as log_file:
+                log_file.write(log_entry)
             return jsonify({
                 "content": content  # ← 必须是未渲染的原始Markdown，前端会自动渲染；当然也可以自行调试prompt让模型不输出Markdown
             })
