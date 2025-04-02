@@ -68,4 +68,4 @@ data = {
 ```bash
 flask run --host=0.0.0.0 --port=5000
 ```
-可以本地调试或者直接访问http://<your_ipv4>:<your_port>/
+可以本地调试或者直接访问 `http://<your_ipv4>:<your_port>/`
