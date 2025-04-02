@@ -3,10 +3,13 @@ SPDX-FileCopyrightText: HuYan, Dept. of Automation , Tsinghua University
 SPDX-License-Identifier: MIT
 -->
 
-# 伍小遥 TinyYao_release_v1.1.0 
+# 伍小遥 TinyYao_release_v1.1.1
 <h5 align = "center">基于 DeepSeek API 开发的 Chatbot 网页应用</h5>
 
 ## 开发与更新
+#### - 2025.3.29 TinyYao_release_v1.1.1 
+- 新增公告栏📢
+- 添加底部声明，可以用于添加备案号和copyright
 #### - 2025.3.24 TinyYao_release_v1.1.0 
 - 新增日志记录和用户访问记录索引，访问`/log`和`/usrlog`即可查看过往访问记录
 - 新增恶意 IP 检测阻断机制，使用 AbuseIPDB API 进行检测，若 75% 以上恶意置信则拒绝访问
@@ -65,4 +68,4 @@ data = {
 ```bash
 flask run --host=0.0.0.0 --port=5000
 ```
-可以本地调试或者直接访问 `http://<your_ipv4>:<your_port>/`
+可以本地调试或者直接访问http://<your_ipv4>:<your_port>/

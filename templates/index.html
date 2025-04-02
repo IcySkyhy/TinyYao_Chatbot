@@ -24,7 +24,7 @@
             color: #555;
         }
 
-        /* 加载提示及加载转圈动画样式 */
+        /* 加载提示样式 */
         #loading {
             display: none;
             color: #666;
@@ -61,7 +61,7 @@
             margin-top: 20px;
         }
 
-        /* 输入按钮及控件样式 */
+        /* 输入控件样式 */
         input, button {
             font-family: inherit;
             font-size: 16px;
@@ -85,7 +85,7 @@
 
         button:disabled {
             opacity: 0.7;
-            cursor: not-allowed;    
+            cursor: not-allowed;
         }
 
         button:hover:not(:disabled) {
@@ -93,7 +93,7 @@
             color: #333;
         }
 
-        /* Markdown渲染样式 */
+        /* Markdown增强样式 */
         #response h1, #response h2, #response h3 {
             color: #333;
             border-bottom: 1px solid #eee;
@@ -141,9 +141,55 @@
             padding: 8px;
             border: 1px solid #ddd;
         }
+
+        /* 新增公告栏样式 */
+        .announcement {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f5f7fa;
+            border-radius: 12px;
+            border: 1px solid #e1e8f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .announcement h3 {
+            margin: 0 0 12px 0;
+            color: #2c3e50;
+            font-size: 17px;
+            display: flex;
+            align-items: center;
+        }
+
+        .announcement h3::before {
+            content: "📢";
+            margin-right: 8px;
+        }
+
+        .announcement-content {
+            color: #566573;
+            font-size: 14px;
+            line-height: 1.7;
+            padding-left: 8px;
+        }
+
+        /* 新增底部声明样式 */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding: 14px;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(4px);
+            border-top: 1px solid #eee;
+            color: #7f8c8d;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
     </style>
     
-    <!-- 依赖库，主要用于对markdown回复的渲染 -->
+    <!-- 依赖库 -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
@@ -155,6 +201,22 @@
     <button onclick="sendMessage()">发送</button>
     <div id="loading">░░░░░ 正在处理中...<div class="loader"></div></div>
     <div id="response"></div>
+
+    <!-- 新增公告栏 -->
+    <div class="announcement">
+        <h4>伍小遥release版本v1.1.0</h4>
+        <div class="announcement-content">
+            通过自定义prompt，自XX班的AI吉祥物XXX诞生啦！希望她能够陪自XX班的同学们度过一段美好的学习时光！<br>
+            • 对话模型升级为DS-r1，性能更强更人性化喵~欢迎大家来玩<br>
+            • 由于模型升级为r1，会产生思维链，故回答生成速度会稍慢，访问时请耐心等待（思维链暂缓显示）<br>
+            • 响应文本框支持Markdown语法解析<br>
+            • 服务器开启时间为6:00-23:50，待夏季宿舍不断电后可能全天开启<br>
+            • 遇到问题请及时向自XX班班委反馈喵~
+        </div>
+    </div>
+
+    <!-- 新增底部声明 -->
+    <div class="footer">🌍 Flask v3.1.0 🚀 Based On DeepSeek 🌠</div>
 
     <script>
         // 配置Markdown解析器
@@ -211,6 +273,9 @@
                 sendMessage();
             }
         });
+        
+        // 在body样式中添加padding-bottom防止内容被底部遮挡
+        document.body.style.paddingBottom = "60px";
     </script>
 </body>
 </html>
